@@ -26,6 +26,12 @@ class BackendApiDecorator < ApplicationDecorator
     }
   end
 
+  def products_used_table_data
+    ServiceDecorator.decorate_collection(services.accessible.order(:name))
+                    .map(&:used_by_backend_table_data)
+                    .to_json
+  end
+
   alias link api_selector_api_link
   alias backends_used_table_data base_data
 

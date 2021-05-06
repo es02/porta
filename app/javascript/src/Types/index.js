@@ -39,6 +39,7 @@ export type Backend = {
   name: string,
   systemName: string,
   description?: string,
+  path?: string,
   privateEndpoint: string
 }
 

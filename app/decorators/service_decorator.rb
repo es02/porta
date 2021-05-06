@@ -68,6 +68,12 @@ class ServiceDecorator < ApplicationDecorator
     }
   end
 
+  def backends_used_table_data
+    BackendApiDecorator.decorate_collection(backend_apis)
+                       .map(&:backends_used_table_data)
+                       .to_json
+  end
+
   private
 
   def backend_api?

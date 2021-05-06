@@ -9,12 +9,7 @@ class BackendApiDecorator < ApplicationDecorator
   end
 
   def add_backend_usage_backends_data
-    {
-      id: id,
-      name: name,
-      privateEndpoint: private_endpoint,
-      updatedAt: updated_at
-    }
+    base_data.merge!({ updatedAt: updated_at })
   end
 
   def products_used_table_data
@@ -23,7 +18,16 @@ class BackendApiDecorator < ApplicationDecorator
                     .to_json
   end
 
+  def base_data
+    {
+      id: id,
+      name: name,
+      privateEndpoint: private_endpoint
+    }
+  end
+
   alias link api_selector_api_link
+  alias backends_used_table_data base_data
 
   private
 

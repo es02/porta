@@ -36,19 +36,25 @@ it('should be paginated and have 5 items per page', () => {
   expect(wrapper.find('tbody tr').length).toEqual(1)
 })
 
-it('should be able to navigate to a backend overview page', () => {
-  const backends = mockBackends(1)
-  const wrapper = mountWrapper({ backends })
-  expect(wrapper.find('tbody tr').first().find('Button').prop('href')).toEqual(backends[0].href)
-})
-
 // FIXME: input not receiving change event
 it.skip('should be filterable by name', () => {
-  const backends = mockBackends(10)
-  const wrapper = mountWrapper({ backends })
+  const Items = mockBackends(10)
+  const wrapper = mountWrapper({ Items })
 
   wrapper.find('input[type="search"]').simulate('change', { target: { value: '1' } })
   wrapper.find('.pf-c-input-group button').last().simulate('click')
+  wrapper.update()
+
+  expect(wrapper.find('tbody tr').length).toEqual(2)
+})
+
+// FIXME: input not receiving change event
+it.skip('should search when pressing Enter', () => {
+  const Items = mockBackends(10)
+  const wrapper = mountWrapper({ Items })
+
+  wrapper.find('input[type="search"]').simulate('change', { target: { value: '1' } })
+  wrapper.find('input[type="search"]').simulate('keydown', { key: 'Enter' })
   wrapper.update()
 
   expect(wrapper.find('tbody tr').length).toEqual(2)

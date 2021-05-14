@@ -27,8 +27,8 @@ class ProviderDecorator < ApplicationDecorator
   def audience_context_new_application_form_data
     {
       'create-application-path': admin_buyers_applications_path,
-      buyers: application_buyers_data.to_json,
-      products: application_products_data.to_json,
+      buyers: application_buyers_initial_data.to_json,
+      products: application_products_initial_data.to_json,
     }
   end
 
@@ -36,7 +36,7 @@ class ProviderDecorator < ApplicationDecorator
     {
       'create-application-path': admin_buyers_account_applications_path(buyer),
       buyer: BuyerDecorator.new(buyer).new_application_data.to_json,
-      products: application_products_data.to_json,
+      products: application_products_initial_data.to_json,
     }
   end
 
@@ -44,20 +44,22 @@ class ProviderDecorator < ApplicationDecorator
     {
       'create-application-path': admin_buyers_applications_path,
       product: ServiceDecorator.new(product).new_application_data.to_json,
-      buyers: application_buyers_data.to_json,
+      buyers: application_buyers_initial_data.to_json,
     }
   end
 
-  def application_products_data
+  def application_products_initial_data
     accessible_services.order(updated_at: :desc)
+                       .limit(20)
                        .map do |service|
                          ServiceDecorator.new(service).new_application_data
                        end
   end
 
-  def application_buyers_data
+  def application_buyers_initial_data
     buyer_accounts.not_master
                   .order(created_at: :desc)
+                  .limit(20)
                   .map do |buyer|
                     BuyerDecorator.new(buyer).new_application_data
                   end

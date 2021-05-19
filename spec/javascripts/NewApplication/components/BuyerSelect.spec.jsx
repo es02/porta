@@ -13,9 +13,11 @@ const buyer = {
   createApplicationPath: '',
   createdAt: ''
 }
+const buyers = [buyer]
 const props = {
   buyer,
-  buyers: [buyer],
+  buyers,
+  buyersCount: buyers.length,
   onSelectBuyer: jest.fn(),
   isDisabled: false
 }

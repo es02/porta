@@ -20,4 +20,18 @@ const post = (url: string, body?: URLSearchParams): Promise<Response> => {
   return ajax(url, 'POST', body)
 }
 
-export { ajax, post }
+const ajaxJSON = (url: string, method: Method, body?: URLSearchParams): Promise<Response> => {
+  const meta = document.querySelector('meta[name="csrf-token"]')
+  const token = (meta && meta.getAttribute('content')) || ''
+
+  return fetch(url, {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'X-CSRF-Token': token
+    },
+    body
+  })
+}
+
+export { ajax, post, ajaxJSON }

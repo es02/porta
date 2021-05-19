@@ -22,6 +22,11 @@ class Buyers::AccountsController < Buyers::BaseController
                     .order_by(params[:sort], params[:direction])
                     .paginate(pagination_params)
                     .decorate
+
+    respond_to do |format|
+      format.html
+      format.json { render json: BuyerDecorator.decorate_collection(@accounts).map(&:new_application_data) }
+    end
   end
 
   def new

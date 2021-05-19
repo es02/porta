@@ -28,6 +28,7 @@ class ProviderDecorator < ApplicationDecorator
     {
       'create-application-path': admin_buyers_applications_path,
       buyers: application_buyers_initial_data.to_json,
+      'buyers-count': buyer_accounts.not_master.size,
       products: application_products_initial_data.to_json,
     }
   end
@@ -45,6 +46,7 @@ class ProviderDecorator < ApplicationDecorator
       'create-application-path': admin_buyers_applications_path,
       product: ServiceDecorator.new(product).new_application_data.to_json,
       buyers: application_buyers_initial_data.to_json,
+      'buyers-count': buyer_accounts.not_master.size,
     }
   end
 

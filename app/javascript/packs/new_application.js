@@ -1,6 +1,5 @@
 // @flow
 
-// $FlowIgnore[missing-export] it is exported but name-mapper is failing
 import { NewApplicationFormWrapper } from 'NewApplication'
 import { safeFromJsonString } from 'utilities'
 
@@ -13,13 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const { dataset } = container
-
   const { createServicePlanPath, createApplicationPath, createApplicationPlanPath, serviceSubscriptionsPath } = dataset
   const product = safeFromJsonString(dataset.product)
   const products = safeFromJsonString(dataset.products)
-  const servicePlansAllowed = safeFromJsonString(dataset.servicePlansAllowed)
+  const servicePlansAllowed = safeFromJsonString(dataset.servicePlansAllowed) || false
   const buyer = safeFromJsonString(dataset.buyer)
   const buyers = safeFromJsonString(dataset.buyers)
+  const buyersCount = safeFromJsonString(dataset.buyersCount)
   const definedFields = safeFromJsonString(dataset.definedFields)
   const validationErrors = safeFromJsonString(dataset.errors) || {}
   const error: string | void = validationErrors.hasOwnProperty('base') ? validationErrors.base[0] : undefined
@@ -34,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     products,
     buyer,
     buyers,
+    buyersCount,
     definedFields,
     validationErrors,
     error

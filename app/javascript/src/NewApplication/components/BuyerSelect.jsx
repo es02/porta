@@ -2,18 +2,19 @@
 
 import * as React from 'react'
 
-import { SelectWithModal } from 'Common'
+import { SelectWithTypeaheadModal } from 'Common'
 
 import type { Buyer } from 'NewApplication/types'
 
 type Props = {
   buyer: Buyer | null,
   buyers: Buyer[],
+  buyersCount: number,
   onSelectBuyer: (Buyer | null) => void,
   isDisabled?: boolean
 }
 
-const BuyerSelect = ({ buyer, buyers, onSelectBuyer, isDisabled }: Props): React.Node => {
+const BuyerSelect = ({ buyer, buyers, buyersCount, onSelectBuyer, isDisabled }: Props): React.Node => {
   const cells = [
     { title: 'Name', propName: 'name' },
     { title: 'Admin', propName: 'admin' },
@@ -21,14 +22,15 @@ const BuyerSelect = ({ buyer, buyers, onSelectBuyer, isDisabled }: Props): React
   ]
 
   return (
-    <SelectWithModal
+    <SelectWithTypeaheadModal
       label="Account"
       fieldId="account_id"
       id="account_id"
       name="account_id"
       // $FlowIgnore[incompatible-type] Buyer implements Record
-      item={buyer}
-      items={buyers.map(b => ({ ...b, description: b.admin }))}
+      item={buyer} // selectedItem
+      items={buyers.map(b => ({ ...b, description: b.admin }))} // localItems
+      itemsCount={buyersCount}
       cells={cells}
       modalTitle="Select an Account"
       // $FlowIssue[incompatible-type] It should not complain since Record.id has union "number | string"
@@ -36,6 +38,7 @@ const BuyerSelect = ({ buyer, buyers, onSelectBuyer, isDisabled }: Props): React
       header="Most recently created Accounts"
       footer="View all Accounts"
       isDisabled={isDisabled}
+      fetchItemsPath="/buyers/accounts.json" // TODO: pass url in props
     />
   )
 }

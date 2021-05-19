@@ -1,6 +1,7 @@
 // @flow
 
 import * as React from 'react'
+import { useState } from 'react'
 
 import {
   FormGroup,
@@ -12,7 +13,8 @@ import {
   toSelectOptionObject,
   SelectOptionObject
 } from 'utilities'
-import { TableModal } from 'Common'
+import { TypeaheadTableModal } from 'Common'
+import { ajaxJSON, paginateCollection } from 'utilities'
 
 import type { Record } from 'utilities'
 
@@ -21,6 +23,7 @@ import './SelectWithModal.scss'
 export type Props<T: Record> = {
   item: T | null,
   items: T[],
+  itemsCount?: number,
   onSelect: (T | null) => void,
   isDisabled?: boolean,
   isValid?: boolean,
@@ -35,15 +38,17 @@ export type Props<T: Record> = {
   footer?: string,
   cells: { title: string, propName: string }[],
   modalTitle: string,
+  fetchItemsPath: string
 }
 
 const MAX_ITEMS = 20
 const HEADER = 'Most recently created'
 const FOOTER = 'View all'
 
-const SelectWithModal = <T: Record>({
+const SelectWithTypeaheadModal = <T: Record>({
   item,
-  items,
+  items: mostRecentItems,
+  itemsCount = mostRecentItems.length,
   onSelect,
   isDisabled,
   isValid,
@@ -56,23 +61,30 @@ const SelectWithModal = <T: Record>({
   header = HEADER,
   footer = FOOTER,
   cells,
-  modalTitle
+  modalTitle,
+  fetchItemsPath
 }: Props<T>): React.Node => {
   const emptyItem = { id: -1, name: 'No results found', disabled: true, privateEndpoint: '' }
   const headerItem = { id: 'header', name: header, disabled: true, className: 'pf-c-select__menu-item--group-name' }
-  const footerItem = { id: 'foo', name: footer, className: 'pf-c-select__menu-item--view-all' }
-  const shouldShowFooter = items.length > MAX_ITEMS
+  const footerItem = { id: 'foo', name: footer }
+  const perPage = 5
 
-  const [expanded, setExpanded] = React.useState(false)
-  const [modalOpen, setModalOpen] = React.useState(false)
+  const [pageDictionary, setPageDictionary] = useState(() => paginateCollection(mostRecentItems, perPage))
 
-  const handleOnSelect = (_e, option: SelectOptionObject) => {
+  const [expanded, setExpanded] = useState(false)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [page, setPage] = useState(1)
+
+  const shouldShowFooter = (mostRecentItems.length < itemsCount) || (mostRecentItems.length > MAX_ITEMS)
+
+  const handleOnSelectFromSelect = (_e, option: SelectOptionObject) => {
     setExpanded(false)
 
     if (option.id === footerItem.id) {
       setModalOpen(true)
     } else {
-      const selectedBackend = items.find(b => String(b.id) === option.id)
+      const selectedBackend = mostRecentItems.find(b => String(b.id) === option.id)
 
       if (selectedBackend) {
         onSelect(selectedBackend)
@@ -98,15 +110,60 @@ const SelectWithModal = <T: Record>({
     return selectItems.map(toSelectOption)
   }
 
-  const options = getSelectOptions(items)
+  const options = getSelectOptions(mostRecentItems)
 
-  const handleOnFilter = (e: SyntheticEvent<HTMLInputElement>) => {
-    const { value } = e.currentTarget
+  const handleOnSelectFromSelectFilter = (e) => {
+    const { value } = e.target
     const term = new RegExp(value, 'i')
 
-    const filteredItems = value !== '' ? items.filter(b => term.test(b.name)) : items
+    const filteredItems = value !== '' ? mostRecentItems.filter(b => term.test(b.name)) : mostRecentItems
 
     return getSelectOptions(filteredItems)
+  }
+
+  const handleOnSelectFromModal = (id: $PropertyType<T, 'id'>) => {
+    const item = pageDictionary[page].find(i => i.id === id)
+    if (item) {
+      onSelect(item)
+    }
+    setModalOpen(false)
+  }
+
+  const handleOnSetModalPage = (page: number) => {
+    // Calculate if there are enough items to fill next page
+    const pageItems = pageDictionary[page]
+
+    if (!pageItems || pageItems.length === 0) {
+      // No items to fill next page, fetch that page
+      fetchItems(page, perPage)
+        .then(buyers => {
+          setPageDictionary({ ...pageDictionary, [page]: buyers })
+        })
+        .catch(err => {
+          console.error(err)
+          console.error('An error ocurred. Please try again later.')
+        })
+    } else {
+      // Enough items to fill next page, move on
+    }
+
+    setPage(page)
+  }
+
+  const fetchItems = (page: number, perPage: number): Promise<T[]> => {
+    const url = `${fetchItemsPath}?page=${page}&per_page=${perPage}`
+    setIsLoading(true)
+
+    return ajaxJSON(url, 'GET')
+      .then(async data => {
+        if (data.ok) {
+          return await data.json()
+        } else {
+          console.error('error ' + data.status)
+          return []
+        }
+      })
+      .finally(() => { setIsLoading(false) })
   }
 
   return (
@@ -125,33 +182,35 @@ const SelectWithModal = <T: Record>({
           placeholderText="Select a item"
           selections={item && toSelectOptionObject(item)}
           onToggle={() => setExpanded(!expanded)}
-          onSelect={handleOnSelect}
+          onSelect={handleOnSelectFromSelect}
           isExpanded={expanded}
           isDisabled={isDisabled}
           onClear={() => onSelect(null)}
           aria-labelledby={id}
           className={shouldShowFooter ? 'pf-c-select__menu--with-fixed-link' : undefined}
           isGrouped
-          onFilter={handleOnFilter}
+          onFilter={handleOnSelectFromSelectFilter}
         >
           {options}
         </Select>
       </FormGroup>
 
-      <TableModal
+      <TypeaheadTableModal
         title={modalTitle}
         cells={cells}
         isOpen={modalOpen}
-        item={item}
-        items={items}
-        onSelect={b => {
-          onSelect(b)
-          setModalOpen(false)
-        }}
+        isLoading={isLoading}
+        selectedItem={item}
+        pageItems={pageDictionary[page]}
+        itemsCount={itemsCount}
+        onSelect={handleOnSelectFromModal}
         onClose={() => setModalOpen(false)}
+        page={page}
+        perPage={perPage}
+        setPage={handleOnSetModalPage}
       />
     </>
   )
 }
 
-export { SelectWithModal }
+export { SelectWithTypeaheadModal }

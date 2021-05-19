@@ -16,7 +16,7 @@ import {
   ServicePlanSelect
 } from 'NewApplication'
 import { UserDefinedField } from 'Common'
-import { CSRFToken } from 'utilities'
+import { createReactWrapper, CSRFToken } from 'utilities'
 import * as flash from 'utilities/alert'
 
 import type { Buyer, Product, ServicePlan, ApplicationPlan } from 'NewApplication/types'
@@ -34,6 +34,7 @@ type Props = {
   servicePlansAllowed: boolean,
   buyer?: Buyer,
   buyers?: Buyer[],
+  buyersCount?: number,
   definedFields?: FieldDefinition[],
   validationErrors: {[string]: string[] | void},
   error?: string
@@ -42,6 +43,7 @@ type Props = {
 const NewApplicationForm = ({
   buyer: defaultBuyer,
   buyers,
+  buyersCount = 0,
   createApplicationPath,
   createApplicationPlanPath,
   createServicePlanPath,
@@ -127,6 +129,7 @@ const NewApplicationForm = ({
           <BuyerSelect
             buyer={buyer}
             buyers={buyers}
+            buyersCount={buyersCount}
             onSelectBuyer={setBuyer}
           />
         )}
@@ -187,4 +190,6 @@ const NewApplicationForm = ({
   )
 }
 
-export { NewApplicationForm }
+const NewApplicationFormWrapper = (props: Props, containerId: string): void => createReactWrapper(<NewApplicationForm {...props} />, containerId)
+
+export { NewApplicationForm, NewApplicationFormWrapper }

@@ -56,6 +56,7 @@ gem 'sidekiq-batch', '~> 0.1.6'
 gem 'sidekiq-cron', require: %w[sidekiq/cron sidekiq/cron/web]
 gem 'sidekiq-lock'
 gem 'sidekiq-throttled'
+gem 'sidekiq_alive'
 
 gem 'sidekiq-prometheus-exporter'
 

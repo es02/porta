@@ -1825,6 +1825,9 @@ GEM
       concurrent-ruby
       redis-prescription
       sidekiq
+    sidekiq_alive (2.1.4)
+      sidekiq
+      webrick
     simplecov (0.21.2)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -2105,6 +2108,7 @@ DEPENDENCIES
   sidekiq-lock
   sidekiq-prometheus-exporter
   sidekiq-throttled
+  sidekiq_alive
   simplecov (~> 0.21.2)
   sinatra
   slim-rails (~> 3.2)
